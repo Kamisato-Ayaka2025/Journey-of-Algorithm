@@ -23,6 +23,17 @@ void dfs_depth(int u , int fa )
     }
 }
 
+void clear()
+{
+    for(int i = 1 ; i <= n ; i++)
+    {
+        g[i].clear();
+        depth[i] = 0;
+        parent[i] = 0;
+        is_on_diameter[i] = false;
+    }
+}
+
 void solve()
 {
     cin >> n;
@@ -65,7 +76,7 @@ void solve()
     int diameter = depth[b];
 
     // 标记直径上的点
-    int x = a , y = b;
+    int y = b;
     while(y)
     {
         is_on_diameter[y] = true;
@@ -73,8 +84,8 @@ void solve()
     }
 
     // 两种情况：直径上有偶数个点或者奇数个点
-    if(depth[b] % 2)
-    {   // 直径上有偶数个点
+    if(depth[b] % 2 == 0)
+    {   // 直径上有奇数个点
         // 先找到中心点
         int mid = a;
         for(int i = 1 ; i <= n ; i++)
@@ -87,8 +98,8 @@ void solve()
             }
         }
 
-        cout << diameter / 2 << "\n";
-        for(int i = 1 ; i < diameter / 2 ; i++)
+        cout << diameter / 2  + 1 << "\n";
+        for(int i = 1 ; i <= diameter / 2 ; i++)
         {
             cout << mid << " " << i << "\n";
         }
@@ -98,11 +109,48 @@ void solve()
     {
         // 中心点有两个
         int c1 = a , c2 = b;
+        for(int i = 1 ; i <= n ; i++)
+        {
+            if(i == a || i == b) continue;
+            if(is_on_diameter[i])
+            {
+                if(depth[i] == (depth[b] / 2))
+                {
+                    c1 = i;
+                }
+                else if(depth[i] == (depth[b]  + 1) / 2)
+                {
+                    c2 = i;
+                }
+            }
+        }
+
+        cout << 2 * ((diameter - 1) / 4 + 1) << "\n";
+        for(int i = (diameter - 1) / 2 ; i >= 0 ; i -= 2)
+        {
+            cout << c1 << " " << i << "\n";
+            cout << c2 << " " << i << "\n";
+        }
     }
+    clear();
+    return;
 }
 
-
+// #define _DEBUG
 int main()
 {
+#ifdef _DEBUG
+    freopen("input.txt", "r", stdin);
+    freopen("output.txt", "w", stdout);
+#endif
+    ios::sync_with_stdio(false);
+    cin.tie(0);
+
+    int t;
+    cin >> t;
+    while(t--)
+    {
+        solve();
+    }
 
 }
