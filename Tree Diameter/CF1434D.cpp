@@ -8,8 +8,10 @@ const int N = 5e5 + 10;
 int n;
 int col[N] , depth[N];
 int dfn1[N] , dfn2[N] , timer1 , timer2 , sz1[N] , sz2[N];
+int bel1[N] , bel2[N]; // 表示点向dfn的映射
 // dfn表示以a和b为根的树的时间戳，sz表示以a和b为根的树的子树大小
 // 通过dfn我们将节点映射到线段树上，sz则是为了快速找到区间边界
+int depth1[N] , depth2[N];
 vector<int> g[N];
 vector<Edge> edges;
 
@@ -34,16 +36,18 @@ void dfs_depth(int u , int fa)
     }
 }
 
-void dfs_mark(int u,  int fa , int *dfn , int &timer , int *sz)
+void dfs_mark(int u,  int fa , int *dfn , int &timer , int *sz , int *bel , int *depth)
 {
     dfn[u] = ++timer;
+    bel[timer] = u;
     sz[u] = 1;
 
     for(int i : g[u])
     {
         int v = edges[i].theOther(u);
         if(v == fa) continue;
-        dfs_mark(v , u , dfn , timer , sz);
+        depth[v] = depth[u] + 1;
+        dfs_mark(v , u , dfn , timer , sz , bel , depth);
         sz[u] += sz[v];
     }
 }
@@ -79,11 +83,27 @@ void pushdown(int u)
     }
 }
 
+void build(int u , int l , int r , int ver , int *bel , int *depth)
+{   // ver来表示是以a为根还是以b为根
+    tr[u][ver] = {l , r , 0 , 0 , 0};
+    
+    if(l == r){
+        int node_on_realTree = bel[l];
+        tr[u][ver].max_depth[col[node_on_realTree]] = depth[node_on_realTree];
+        return;
+    }
+    int mid = (l + r) >> 1;
+    build(u << 1 , l , mid , ver , bel , depth);
+    build(u << 1 | 1,  mid + 1 , r , ver , bel , depth);
+    pushup(u);
+}
 
-
-void update(int u , int l , int r)
-{   // 同时翻转两棵树
-
+void update(int u , int l , int r , int ver)
+{   
+    if(l == r)
+    {
+        
+    }
 }
 
 void solve()
@@ -127,8 +147,8 @@ void solve()
 
     // 然后分别以两个直径为根 构建新树
     // 并且打上时间戳 准备线段树操作
-    dfs_mark(a , 0 , dfn1 , timer1 , sz1);
-    dfs_mark(b , 0 , dfn2 , timer2 , sz2);
+    dfs_mark(a , 0 , dfn1 , timer1 , sz1 , bel1 , depth1);
+    dfs_mark(b , 0 , dfn2 , timer2 , sz2 , bel2 , depth2);
 
 
 }
