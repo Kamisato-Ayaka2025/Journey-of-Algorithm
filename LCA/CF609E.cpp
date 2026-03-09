@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <algorithm>
 
 using namespace std;
 
@@ -20,13 +21,13 @@ public:
         return from ^ to ^ x;
     }
 
-    bool operator < (const Edge &W) const{
-        return weight < W.weight;
+    bool operator > (const Edge &W) const{
+        return weight > W.weight; 
     }
 };
 
 int p[N];
-vector<int> g[N] , g1[N]; // g1存生成树
+vector<int> g1[N]; 
 vector<Edge> edge;
 
 void init()
@@ -42,11 +43,12 @@ int find(int x)
     return p[x];
 }
 
-void dfs(int u , int f , int fid)
+void dfs(int u , int f , int w)
 {
-    max_e[u][0] = (f == 0 ? -1 : edge[fid].weight); // 防止根节点
-
+    depth[u] = depth[f] + 1;
     up[u][0] = f;
+    max_e[u][0] = w; 
+
     for(int j = 1 ; j < 20 ; j++){
         up[u][j] = up[up[u][j - 1]][j - 1];
         max_e[u][j] = max(max_e[u][j - 1] , max_e[up[u][j - 1]][j - 1]);
@@ -56,26 +58,38 @@ void dfs(int u , int f , int fid)
     {
         int v = edge[eid].theOther(u);
         if(v == f) continue;
-        depth[v] = depth[u] + 1;
-        dfs(v , u , eid);
+        dfs(v , u , edge[eid].weight);
     }
 }
 
-int kth(int u , int k)
+int get_path_max(int u, int v)
 {
-    int res = -1;
-    for(int j = 19 ; j >= 0 ; j--){
-        if(k & (1 << j)){
-            res = max(res , max_e[u][j]);
+    if(depth[u] < depth[v]) swap(u, v);
+    int res = 0;
+
+    for(int j = 19; j >= 0; j--){
+        if(depth[up[u][j]] >= depth[v]){
+            res = max(res, max_e[u][j]);
             u = up[u][j];
         }
     }
-    return res;
+
+    if(u == v) return res;
+
+    for(int j = 19; j >= 0; j--){
+        if(up[u][j] != up[v][j]){
+            res = max(res, max(max_e[u][j], max_e[v][j]));
+            u = up[u][j];
+            v = up[v][j];
+        }
+    }
+
+    return max(res, max(max_e[u][0], max_e[v][0]));
 }
 
 void solve()
 {
-    cin >> n >> m;
+    if (!(cin >> n >> m)) return;
     init();
 
     priority_queue<Edge , vector<Edge> , greater<Edge>> pq;
@@ -86,12 +100,11 @@ void solve()
         cin >> u >> v >> w;
         edge.emplace_back(u , v , w , i);
         pq.push(edge[i]);
-        g[u].push_back(i);
-        g[v].push_back(i);
     }
 
     // MST
-    for(int i = 0 ; i < m ; i++)
+    int cnt = 0;
+    while(!pq.empty() && cnt < n - 1)
     {
         auto t = pq.top();
         pq.pop();
@@ -101,39 +114,36 @@ void solve()
         if(pa != pb)
         {
             int idx = t.edgeID;
-            sum += t.weight;
+            sum += (LL)t.weight;
             g1[a].push_back(idx);
             g1[b].push_back(idx);
             p[pa] = pb;
             st[idx] = true;
+            cnt++;
         }
     }
 
-    // Query
     dfs(1 , 0 , 0);
+
+    // 求解
     for(int i = 0 ; i < m ; i++)
     {
         if(st[i]){
-            // spanning edge
             cout << sum << "\n";
         }
-        else{// back_edge
+        else{
             int u = edge[i].from , v = edge[i].to;
-            if(depth[u] < depth[v]) swap(u , v);
-
-            int dist = depth[u] - depth[v];
-            cout << sum + edge[i].weight - kth(u , dist) << "\n";
+            cout << sum + (LL)edge[i].weight - (LL)get_path_max(u , v) << "\n";
         }
     }
-    return;
 }
 
-#define _DEBUG
+// #define _DEBUG
 int main()
 {
 #ifdef _DEBUG
     freopen("input.txt"  ,"r" , stdin);
-    freopen("output.txt"  ,"w" , stdout);
+    freopen("output.txt " ,"w" , stdout);
 #endif
     ios::sync_with_stdio(false);
     cin.tie(0);
