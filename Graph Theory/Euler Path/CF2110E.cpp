@@ -39,8 +39,8 @@ inline void add_edge(int u, int v, int id) {
 
 void solve() {
     int n;
-    if (!(cin >> n)) return;
-
+    cin >> n;
+    
     struct RawEdge { int v, p, id; };
     vector<RawEdge> raw_edges;
     vector<int> tmp1, tmp2;
