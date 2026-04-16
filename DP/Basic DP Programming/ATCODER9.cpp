@@ -24,7 +24,7 @@ void solve()
     return;
 }
 
-#define _DEBUG
+// #define _DEBUG
 int main()
 {
 #ifdef _DEBUG
