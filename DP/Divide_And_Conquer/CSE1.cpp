@@ -10,7 +10,7 @@ int a[N];
 LL sum[N];
 
 // dp[i][j]表示分割 i 次 在 前 j 个元素里面的最小开销
-// dp[i][j] = min (dp[i - 1][k] + C(k , j));
+// dp[i][j] = min (dp[i - 1][k] + COST(k , j));
 LL dp[2][N];
 
 LL C(int l , int r)
